@@ -6,7 +6,7 @@ export const createStudent = async (req, res) => {
   const v = new Validator(req.body, {
     name: "required|string",
     gender: "required|string",
-    class: "required|string",
+    class_id: "required|string",
     guardian_name: "required|string",
     whatsapp_number: "required|string",
     monthly_fees: "required|numeric",
@@ -24,7 +24,7 @@ export const createStudent = async (req, res) => {
     const student = await Student.create({
       name: req.body.name,
       gender: req.body.gender,
-      class: req.body.class,
+      class_id: req.body.class_id,
       guardian_name: req.body.guardian_name,
       monthly_fees: req.body.monthly_fees,
       whatsapp_number: req.body.whatsapp_number,
@@ -47,9 +47,9 @@ export const createStudent = async (req, res) => {
 
 export const fetchStudents = async (req, res) => {
   try {
-    const students = await Student.find({ user: req.user.id }).sort({
-      datetime: -1,
-    });
+    const students = await Student.find({ user: req.user.id })
+      .populate("class_id","class_name") // populate only the 'name' field from Class
+      .sort({ datetime: -1 });
 
     const studentData = await Promise.all(
       students.map(async (student) => {
@@ -62,7 +62,7 @@ export const fetchStudents = async (req, res) => {
           _id: student._id,
           name: student.name,
           gender: student.gender,
-          class: student.class,
+          class: student.class_id, // populated class name
           guardian_name: student.guardian_name,
           whatsapp_number: student.whatsapp_number,
           datetime: student.datetime,
@@ -76,3 +76,4 @@ export const fetchStudents = async (req, res) => {
     res.status(500).json({ status: "error", message: err.message });
   }
 };
+
